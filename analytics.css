@@ -32,13 +32,78 @@
     font-size: 24px;
 }
 
-/* Age range: "Early Childhood → Eighties" */
+/* Age range: "0-5 → 81+" */
 .analytics-age-range {
     font-size: 16px;
     color: #4a5568;
     font-weight: 500;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
     letter-spacing: 0.5px;
+}
+
+/* Bar Chart Section */
+.analytics-chart {
+    margin: 16px 0;
+    padding-top: 16px;
+    border-top: 1px solid #d1dbe8;
+}
+
+.analytics-chart-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.analytics-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.analytics-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.analytics-bar-label {
+    width: 42px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #4a5568;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.analytics-bar-track {
+    flex: 1;
+    height: 20px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.analytics-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 6px;
+    min-width: 24px;
+    transition: width 0.4s ease-out;
+}
+
+.analytics-bar-count {
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
 }
 
 /* Technical summary */
@@ -68,6 +133,19 @@
     
     .analytics-age-range {
         font-size: 15px;
+    }
+    
+    .analytics-bars {
+        max-width: 100%;
+    }
+    
+    .analytics-bar-label {
+        width: 36px;
+        font-size: 10px;
+    }
+    
+    .analytics-bar-track {
+        height: 18px;
     }
     
     .analytics-technical {
