@@ -1,4 +1,5 @@
 // Memorial Video AI - Sorted Photos Gallery
+// https://filesonlyorder.memorialvideo.ai/
 // Handles fetching photos, displaying gallery, drag-and-drop reordering, and download
 
 // === CONFIGURATION ===
@@ -271,102 +272,170 @@ async function downloadAll() {
 
 // === DOWNLOAD SUCCESS MESSAGE ===
 function showDownloadSuccess(photoCount, emailSent) {
-    // Create success banner
-    const banner = document.createElement('div');
-    banner.className = 'success-banner';
-    banner.innerHTML = `
-        <div class="success-content">
-            <span class="success-icon">✅</span>
-            <div class="success-text">
-                <strong>Download starting!</strong>
-                <p>${photoCount} photos packaged as a zip file.${emailSent ? ' A backup download link has been emailed to you.' : ''}</p>
+    // Create full-screen thank you overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'thank-you-overlay';
+    overlay.innerHTML = `
+        <div class="thank-you-content">
+            <div class="thank-you-icon">✅</div>
+            <h2>Download Started!</h2>
+            <p class="thank-you-main">${photoCount} photos are being downloaded as a zip file.</p>
+            ${emailSent ? '<p class="thank-you-email">A backup download link has also been emailed to you.</p>' : ''}
+            
+            <div class="thank-you-info">
+                <p><strong>Your files are named:</strong></p>
+                <p class="file-naming">001.jpg, 004.jpg, 007.jpg, 010.jpg...</p>
+                <p class="file-note">This numbering allows you to easily insert additional photos between existing ones in your slideshow software.</p>
             </div>
-            <button class="success-close" onclick="this.parentElement.parentElement.remove()">×</button>
+            
+            <div class="thank-you-actions">
+                <button class="btn-close-overlay" onclick="closeThankYou()">Close</button>
+                <button class="btn-redownload" onclick="downloadAll()">Download Again</button>
+            </div>
+            
+            <p class="thank-you-support">Questions? Contact us at <a href="mailto:team@memorialvideo.ai">team@memorialvideo.ai</a></p>
         </div>
     `;
     
     // Add styles if not already present
-    if (!document.getElementById('success-banner-styles')) {
+    if (!document.getElementById('thank-you-styles')) {
         const styles = document.createElement('style');
-        styles.id = 'success-banner-styles';
+        styles.id = 'thank-you-styles';
         styles.textContent = `
-            .success-banner {
+            .thank-you-overlay {
                 position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: #d4edda;
-                border: 1px solid #c3e6cb;
-                border-radius: 8px;
-                padding: 15px 20px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                z-index: 1000;
-                max-width: 500px;
-                animation: slideDown 0.3s ease-out;
-            }
-            @keyframes slideDown {
-                from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
-                to { transform: translateX(-50%) translateY(0); opacity: 1; }
-            }
-            .success-content {
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.85);
                 display: flex;
-                align-items: flex-start;
-                gap: 12px;
+                align-items: center;
+                justify-content: center;
+                z-index: 2000;
+                animation: fadeIn 0.3s ease-out;
             }
-            .success-icon {
-                font-size: 24px;
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
             }
-            .success-text {
-                flex: 1;
-            }
-            .success-text strong {
-                color: #155724;
-                font-size: 16px;
-            }
-            .success-text p {
-                color: #155724;
-                font-size: 14px;
-                margin: 5px 0 0 0;
-            }
-            .success-close {
-                background: none;
-                border: none;
-                font-size: 20px;
-                cursor: pointer;
-                color: #155724;
-                padding: 0;
-                line-height: 1;
-            }
-            .error-banner {
-                position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: #f8d7da;
-                border: 1px solid #f5c6cb;
-                border-radius: 8px;
-                padding: 15px 20px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                z-index: 1000;
+            .thank-you-content {
+                background: white;
+                border-radius: 16px;
+                padding: 40px 50px;
                 max-width: 500px;
-                animation: slideDown 0.3s ease-out;
+                text-align: center;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                animation: slideUp 0.3s ease-out;
             }
-            .error-banner .success-icon { color: #721c24; }
-            .error-banner .success-text strong { color: #721c24; }
-            .error-banner .success-text p { color: #721c24; }
-            .error-banner .success-close { color: #721c24; }
+            @keyframes slideUp {
+                from { transform: translateY(30px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            .thank-you-icon {
+                font-size: 60px;
+                margin-bottom: 20px;
+            }
+            .thank-you-content h2 {
+                color: #1e3c72;
+                font-size: 28px;
+                margin: 0 0 15px 0;
+            }
+            .thank-you-main {
+                font-size: 18px;
+                color: #333;
+                margin: 0 0 10px 0;
+            }
+            .thank-you-email {
+                font-size: 14px;
+                color: #666;
+                margin: 0 0 25px 0;
+            }
+            .thank-you-info {
+                background: #f8f9fa;
+                border-radius: 10px;
+                padding: 20px;
+                margin: 20px 0;
+            }
+            .thank-you-info p {
+                margin: 5px 0;
+                color: #555;
+            }
+            .file-naming {
+                font-family: monospace;
+                font-size: 16px;
+                color: #1e3c72 !important;
+                font-weight: bold;
+            }
+            .file-note {
+                font-size: 13px;
+                color: #777 !important;
+                margin-top: 10px !important;
+            }
+            .thank-you-actions {
+                display: flex;
+                gap: 15px;
+                justify-content: center;
+                margin: 25px 0;
+            }
+            .btn-close-overlay {
+                padding: 12px 30px;
+                background: #1e3c72;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .btn-close-overlay:hover {
+                background: #2a5298;
+                transform: translateY(-2px);
+            }
+            .btn-redownload {
+                padding: 12px 30px;
+                background: white;
+                color: #1e3c72;
+                border: 2px solid #1e3c72;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .btn-redownload:hover {
+                background: #f0f4f8;
+                transform: translateY(-2px);
+            }
+            .thank-you-support {
+                font-size: 13px;
+                color: #888;
+                margin: 0;
+            }
+            .thank-you-support a {
+                color: #1e3c72;
+                text-decoration: none;
+            }
+            .thank-you-support a:hover {
+                text-decoration: underline;
+            }
         `;
         document.head.appendChild(styles);
     }
     
-    document.body.appendChild(banner);
+    document.body.appendChild(overlay);
     
-    // Auto-remove after 10 seconds
-    setTimeout(() => {
-        if (banner.parentElement) {
-            banner.remove();
-        }
-    }, 10000);
+    // Store reference for closing
+    window.currentThankYouOverlay = overlay;
+}
+
+// === CLOSE THANK YOU SCREEN ===
+function closeThankYou() {
+    if (window.currentThankYouOverlay) {
+        window.currentThankYouOverlay.remove();
+        window.currentThankYouOverlay = null;
+    }
 }
 
 // === DOWNLOAD ERROR MESSAGE ===
