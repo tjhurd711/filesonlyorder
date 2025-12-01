@@ -6,6 +6,10 @@
 const S3_BUCKET = 'order-by-age-uploads';
 const S3_BASE_URL = `https://${S3_BUCKET}.s3.amazonaws.com`;
 
+// === CONFIGURATION - LAMBDAS ===
+const ZIP_LAMBDA_URL = 'https://cstueckloguxc24v6kshrxfn3y0oifhc.lambda-url.us-east-2.on.aws/';
+const DELETE_LAMBDA_URL = 'https://YOUR_DELETE_LAMBDA.lambda-url.us-east-2.on.aws/'; // UPDATE THIS
+
 // === STATE ===
 let photoOrder = []; // Array of S3 keys in current order
 let uid = null;
@@ -165,17 +169,11 @@ function renderGallery(photoEntries) {
         photoItem.dataset.s3Key = entry.s3Key;
         photoItem.dataset.index = index;
 
-        // Calculate display number (incrementing by 3)
-        const displayNumber = (index + 1) * 3 - 2; // 1, 4, 7, 10... wait, should be 001, 003, 006
-        // Actually: position 0 = 001, position 1 = 003, position 2 = 006, etc.
-        // So: (index * 3) + 1 but padded... wait let me recalculate
-        // We want: 001, 003, 006, 009... which is (index * 3) + 1 for 1-indexed but showing 001, 004, 007
-        // Hmm, actually for 001, 003, 006: that's 1, 3, 6 = not linear
-        // Let me just do simple: 001, 002, 003 for display, actual filename will be 001, 003, 006
         const displayNum = String(index + 1).padStart(3, '0');
 
         photoItem.innerHTML = `
             <div class="photo-number">${displayNum}</div>
+            <button class="delete-btn" onclick="deletePhoto('${entry.s3Key}', this)" title="Delete photo">×</button>
             <img src="${S3_BASE_URL}/${entry.s3Key}" 
                  alt="Photo ${index + 1}" 
                  loading="lazy"
@@ -243,9 +241,6 @@ function updateDisplayNumbers() {
         item.dataset.index = index;
     });
 }
-
-// === CONFIGURATION - ZIP LAMBDA ===
-const ZIP_LAMBDA_URL = 'https://cstueckloguxc24v6kshrxfn3y0oifhc.lambda-url.us-east-2.on.aws/';
 
 // === DOWNLOAD ALL ===
 async function downloadAll() {
@@ -531,5 +526,70 @@ function showError(message, detail = '') {
     errorState.style.display = 'block';
     if (detail) {
         errorDetail.textContent = detail;
+    }
+}
+
+// === DELETE PHOTO ===
+async function deletePhoto(s3Key, buttonElement) {
+    // Confirm deletion
+    if (!confirm('Are you sure you want to delete this photo? This cannot be undone.')) {
+        return;
+    }
+
+    const photoItem = buttonElement.closest('.photo-item');
+    
+    // Show deleting state
+    photoItem.classList.add('deleting');
+    buttonElement.disabled = true;
+    buttonElement.textContent = '...';
+
+    try {
+        console.log('[DELETE] Deleting photo:', s3Key);
+
+        const response = await fetch(DELETE_LAMBDA_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                uid: uid,
+                s3_key: s3Key
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `Server error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('[DELETE] Success:', result);
+
+        // Remove from photoOrder array
+        const index = photoOrder.indexOf(s3Key);
+        if (index > -1) {
+            photoOrder.splice(index, 1);
+        }
+
+        // Remove from DOM with animation
+        photoItem.style.transform = 'scale(0)';
+        photoItem.style.opacity = '0';
+        
+        setTimeout(() => {
+            photoItem.remove();
+            // Update display numbers
+            updateDisplayNumbers();
+            // Update photo count
+            document.getElementById('photoCount').textContent = photoOrder.length;
+        }, 300);
+
+    } catch (error) {
+        console.error('[DELETE ERROR]', error);
+        alert(`Failed to delete photo: ${error.message}`);
+        
+        // Reset button
+        photoItem.classList.remove('deleting');
+        buttonElement.disabled = false;
+        buttonElement.textContent = '×';
     }
 }
