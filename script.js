@@ -207,8 +207,7 @@ function updateDisplayNumbers() {
 }
 
 // === CONFIGURATION - ZIP LAMBDA ===
-// TODO: Replace with your actual API Gateway endpoint after deploying the Lambda
-const ZIP_LAMBDA_URL = 'https://YOUR_API_GATEWAY_ID.execute-api.us-east-2.amazonaws.com/prod/generate-zip';
+const ZIP_LAMBDA_URL = 'https://cstueckloguxc24v6kshrxfn3y0oifhc.lambda-url.us-east-2.on.aws/';
 
 // === DOWNLOAD ALL ===
 async function downloadAll() {
