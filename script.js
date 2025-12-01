@@ -35,32 +35,48 @@ window.addEventListener('DOMContentLoaded', async () => {
 async function loadPhotos() {
     showLoading(true);
 
-    // Fetch the manifest file
-    const manifestUrl = `${S3_BASE_URL}/metadata/${uid}/final_filenames.json`;
-    console.log(`[FETCH] Loading manifest from: ${manifestUrl}`);
+    // First, check if there's a QA-reviewed custom order
+    const customOrder = await loadCustomOrder();
+    
+    let photoEntries;
+    
+    if (customOrder) {
+        // Use QA-reviewed order (no sorting - use exact array order)
+        console.log(`[CUSTOM ORDER] Using QA-reviewed order with ${customOrder.length} photos`);
+        
+        photoEntries = customOrder.map(s3Key => ({
+            s3Key: s3Key,
+            filename: s3Key.split('/').pop(),
+            originalFilename: extractOriginalFilename(s3Key)
+        }));
+    } else {
+        // Fall back to manifest + alphabetical filename sort
+        const manifestUrl = `${S3_BASE_URL}/metadata/${uid}/final_filenames.json`;
+        console.log(`[FETCH] Loading manifest from: ${manifestUrl}`);
 
-    const response = await fetch(manifestUrl);
+        const response = await fetch(manifestUrl);
 
-    if (!response.ok) {
-        throw new Error(`Failed to fetch manifest: ${response.status} ${response.statusText}`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch manifest: ${response.status} ${response.statusText}`);
+        }
+
+        const manifest = await response.json();
+        console.log(`[MANIFEST] Loaded ${manifest.length} entries`);
+
+        // Extract the final keys (renamed photos) and sort by filename
+        // Files are named like: 01-05(003)_|EX|_x_photo.jpg
+        // We want to sort by the age bucket and rank
+        photoEntries = manifest
+            .filter(entry => entry.final_key && !entry.final_key.endsWith('.ready'))
+            .map(entry => ({
+                s3Key: entry.final_key,
+                filename: entry.final_key.split('/').pop(),
+                originalFilename: extractOriginalFilename(entry.final_key)
+            }))
+            .sort((a, b) => a.filename.localeCompare(b.filename));
+
+        console.log(`[PHOTOS] Sorted ${photoEntries.length} photos (no custom order found)`);
     }
-
-    const manifest = await response.json();
-    console.log(`[MANIFEST] Loaded ${manifest.length} entries`);
-
-    // Extract the final keys (renamed photos) and sort by filename
-    // Files are named like: 01-05(003)_|EX|_x_photo.jpg
-    // We want to sort by the age bucket and rank
-    const photoEntries = manifest
-        .filter(entry => entry.final_key && !entry.final_key.endsWith('.ready'))
-        .map(entry => ({
-            s3Key: entry.final_key,
-            filename: entry.final_key.split('/').pop(),
-            originalFilename: extractOriginalFilename(entry.final_key)
-        }))
-        .sort((a, b) => a.filename.localeCompare(b.filename));
-
-    console.log(`[PHOTOS] Sorted ${photoEntries.length} photos`);
 
     // Store the initial order
     photoOrder = photoEntries.map(entry => entry.s3Key);
@@ -80,6 +96,27 @@ async function loadPhotos() {
     }
 
     showLoading(false);
+}
+
+// === LOAD CUSTOM ORDER (QA-REVIEWED) ===
+async function loadCustomOrder() {
+    try {
+        const customOrderUrl = `${S3_BASE_URL}/metadata/${uid}/custom_order.json`;
+        console.log(`[FETCH] Checking for custom order: ${customOrderUrl}`);
+        
+        const response = await fetch(customOrderUrl);
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log(`[CUSTOM ORDER] Found QA-reviewed order from ${data.updated_at}`);
+            return data.order;
+        } else {
+            console.log(`[CUSTOM ORDER] No custom order found (${response.status})`);
+        }
+    } catch (e) {
+        console.log(`[CUSTOM ORDER] Error loading custom order:`, e.message);
+    }
+    return null;
 }
 
 // === EXTRACT ORIGINAL FILENAME ===
