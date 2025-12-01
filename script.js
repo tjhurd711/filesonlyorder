@@ -206,25 +206,28 @@ function updateDisplayNumbers() {
     });
 }
 
+// === CONFIGURATION - ZIP LAMBDA ===
+// TODO: Replace with your actual API Gateway endpoint after deploying the Lambda
+const ZIP_LAMBDA_URL = 'https://YOUR_API_GATEWAY_ID.execute-api.us-east-2.amazonaws.com/prod/generate-zip';
+
 // === DOWNLOAD ALL ===
 async function downloadAll() {
     const downloadBtn = document.getElementById('downloadBtn');
     const originalText = downloadBtn.querySelector('.btn-text').textContent;
 
-    // Disable button and show loading state
-    downloadBtn.disabled = true;
-    downloadBtn.querySelector('.btn-text').textContent = 'Preparing download...';
+    // Disable all download buttons and show loading state
+    const allDownloadBtns = document.querySelectorAll('.download-btn');
+    allDownloadBtns.forEach(btn => {
+        btn.disabled = true;
+        const btnText = btn.querySelector('.btn-text');
+        if (btnText) btnText.textContent = 'Preparing download...';
+    });
 
     try {
-        // TODO: Call Lambda to generate zip
-        // For now, show alert with the order
-        console.log('[DOWNLOAD] Current photo order:', photoOrder);
+        console.log('[DOWNLOAD] Starting zip generation for', photoOrder.length, 'photos');
+        console.log('[DOWNLOAD] Photo order:', photoOrder);
 
-        alert(`Download feature coming soon!\n\nYour ${photoOrder.length} photos will be downloaded as a zip file with names like 001.jpg, 003.jpg, 006.jpg, etc.\n\nThe order you've arranged will be preserved.`);
-
-        /*
-        // Future implementation:
-        const response = await fetch('https://your-api-gateway/generate-zip', {
+        const response = await fetch(ZIP_LAMBDA_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -236,21 +239,160 @@ async function downloadAll() {
         });
 
         if (!response.ok) {
-            throw new Error('Failed to generate zip');
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `Server error: ${response.status}`);
         }
 
-        const { download_url } = await response.json();
-        window.location.href = download_url;
-        */
+        const result = await response.json();
+        console.log('[DOWNLOAD] Lambda response:', result);
+
+        if (result.success && result.download_url) {
+            // Show success message
+            showDownloadSuccess(result.photo_count, result.email_sent);
+            
+            // Trigger download
+            console.log('[DOWNLOAD] Starting download from:', result.download_url);
+            window.location.href = result.download_url;
+        } else {
+            throw new Error(result.error || 'Failed to generate download link');
+        }
 
     } catch (error) {
         console.error('[DOWNLOAD ERROR]', error);
-        alert('Failed to prepare download. Please try again.');
+        showDownloadError(error.message);
     } finally {
-        // Re-enable button
-        downloadBtn.disabled = false;
-        downloadBtn.querySelector('.btn-text').textContent = originalText;
+        // Re-enable all download buttons
+        allDownloadBtns.forEach(btn => {
+            btn.disabled = false;
+            const btnText = btn.querySelector('.btn-text');
+            if (btnText) btnText.textContent = originalText;
+        });
     }
+}
+
+// === DOWNLOAD SUCCESS MESSAGE ===
+function showDownloadSuccess(photoCount, emailSent) {
+    // Create success banner
+    const banner = document.createElement('div');
+    banner.className = 'success-banner';
+    banner.innerHTML = `
+        <div class="success-content">
+            <span class="success-icon">✅</span>
+            <div class="success-text">
+                <strong>Download starting!</strong>
+                <p>${photoCount} photos packaged as a zip file.${emailSent ? ' A backup download link has been emailed to you.' : ''}</p>
+            </div>
+            <button class="success-close" onclick="this.parentElement.parentElement.remove()">×</button>
+        </div>
+    `;
+    
+    // Add styles if not already present
+    if (!document.getElementById('success-banner-styles')) {
+        const styles = document.createElement('style');
+        styles.id = 'success-banner-styles';
+        styles.textContent = `
+            .success-banner {
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #d4edda;
+                border: 1px solid #c3e6cb;
+                border-radius: 8px;
+                padding: 15px 20px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 1000;
+                max-width: 500px;
+                animation: slideDown 0.3s ease-out;
+            }
+            @keyframes slideDown {
+                from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+                to { transform: translateX(-50%) translateY(0); opacity: 1; }
+            }
+            .success-content {
+                display: flex;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .success-icon {
+                font-size: 24px;
+            }
+            .success-text {
+                flex: 1;
+            }
+            .success-text strong {
+                color: #155724;
+                font-size: 16px;
+            }
+            .success-text p {
+                color: #155724;
+                font-size: 14px;
+                margin: 5px 0 0 0;
+            }
+            .success-close {
+                background: none;
+                border: none;
+                font-size: 20px;
+                cursor: pointer;
+                color: #155724;
+                padding: 0;
+                line-height: 1;
+            }
+            .error-banner {
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #f8d7da;
+                border: 1px solid #f5c6cb;
+                border-radius: 8px;
+                padding: 15px 20px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 1000;
+                max-width: 500px;
+                animation: slideDown 0.3s ease-out;
+            }
+            .error-banner .success-icon { color: #721c24; }
+            .error-banner .success-text strong { color: #721c24; }
+            .error-banner .success-text p { color: #721c24; }
+            .error-banner .success-close { color: #721c24; }
+        `;
+        document.head.appendChild(styles);
+    }
+    
+    document.body.appendChild(banner);
+    
+    // Auto-remove after 10 seconds
+    setTimeout(() => {
+        if (banner.parentElement) {
+            banner.remove();
+        }
+    }, 10000);
+}
+
+// === DOWNLOAD ERROR MESSAGE ===
+function showDownloadError(message) {
+    const banner = document.createElement('div');
+    banner.className = 'success-banner error-banner';
+    banner.innerHTML = `
+        <div class="success-content">
+            <span class="success-icon">❌</span>
+            <div class="success-text">
+                <strong>Download failed</strong>
+                <p>${message || 'Please try again or contact support.'}</p>
+            </div>
+            <button class="success-close" onclick="this.parentElement.parentElement.remove()">×</button>
+        </div>
+    `;
+    
+    document.body.appendChild(banner);
+    
+    // Auto-remove after 10 seconds
+    setTimeout(() => {
+        if (banner.parentElement) {
+            banner.remove();
+        }
+    }, 10000);
 }
 
 // === UI HELPERS ===
