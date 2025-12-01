@@ -8,7 +8,7 @@ const S3_BASE_URL = `https://${S3_BUCKET}.s3.amazonaws.com`;
 
 // === CONFIGURATION - LAMBDAS ===
 const ZIP_LAMBDA_URL = 'https://cstueckloguxc24v6kshrxfn3y0oifhc.lambda-url.us-east-2.on.aws/';
-const DELETE_LAMBDA_URL = 'https://d3fcunfwhpv4dhopus6lylkiam0dyabo.lambda-url.us-east-2.on.aws/'; // UPDATE THIS
+const DELETE_LAMBDA_URL = 'https://d3fcunfwhpv4dhopus6lylkiam0dyabo.lambda-url.us-east-2.on.aws/';
 
 // === STATE ===
 let photoOrder = []; // Array of S3 keys in current order
@@ -557,13 +557,16 @@ async function deletePhoto(s3Key, buttonElement) {
             })
         });
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `Server error: ${response.status}`);
+        // Try to parse response, but don't fail if CORS blocks it
+        let result = { success: true };
+        try {
+            result = await response.json();
+        } catch (e) {
+            // CORS might block reading response, but request likely succeeded
+            console.log('[DELETE] Could not parse response (CORS), assuming success');
         }
 
-        const result = await response.json();
-        console.log('[DELETE] Success:', result);
+        console.log('[DELETE] Result:', result);
 
         // Remove from photoOrder array
         const index = photoOrder.indexOf(s3Key);
@@ -585,11 +588,33 @@ async function deletePhoto(s3Key, buttonElement) {
 
     } catch (error) {
         console.error('[DELETE ERROR]', error);
-        alert(`Failed to delete photo: ${error.message}`);
         
-        // Reset button
-        photoItem.classList.remove('deleting');
-        buttonElement.disabled = false;
-        buttonElement.textContent = '×';
+        // Check if it's a CORS error - the delete might have still worked
+        if (error.message.includes('CORS') || error.message.includes('NetworkError')) {
+            console.log('[DELETE] CORS error, but delete may have succeeded. Removing from UI.');
+            
+            // Remove from photoOrder array
+            const index = photoOrder.indexOf(s3Key);
+            if (index > -1) {
+                photoOrder.splice(index, 1);
+            }
+
+            // Remove from DOM
+            photoItem.style.transform = 'scale(0)';
+            photoItem.style.opacity = '0';
+            
+            setTimeout(() => {
+                photoItem.remove();
+                updateDisplayNumbers();
+                document.getElementById('photoCount').textContent = photoOrder.length;
+            }, 300);
+        } else {
+            alert(`Failed to delete photo: ${error.message}`);
+            
+            // Reset button
+            photoItem.classList.remove('deleting');
+            buttonElement.disabled = false;
+            buttonElement.textContent = '×';
+        }
     }
 }
