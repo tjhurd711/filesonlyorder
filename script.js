@@ -100,6 +100,8 @@ async function loadPhotos() {
     }
 
     showLoading(false);
+
+    AnalyticsDisplay.init(uid, photoOrder);
 }
 
 // === LOAD CUSTOM ORDER (QA-REVIEWED) ===
