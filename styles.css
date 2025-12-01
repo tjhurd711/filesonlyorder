@@ -215,6 +215,53 @@ h1 {
     text-align: center;
 }
 
+/* Delete Button */
+.delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    z-index: 10;
+}
+
+.photo-item:hover .delete-btn {
+    opacity: 1;
+}
+
+.delete-btn:hover {
+    background: rgba(200, 35, 51, 1);
+    transform: scale(1.1);
+}
+
+.delete-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Deleting State */
+.photo-item.deleting {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.photo-item {
+    transition: all 0.3s ease;
+}
+
 /* Drag Ghost Styling */
 .photo-item.sortable-ghost {
     opacity: 0.4;
