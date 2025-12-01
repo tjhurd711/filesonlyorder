@@ -8,7 +8,7 @@ const S3_BASE_URL = `https://${S3_BUCKET}.s3.amazonaws.com`;
 
 // === CONFIGURATION - LAMBDAS ===
 const ZIP_LAMBDA_URL = 'https://cstueckloguxc24v6kshrxfn3y0oifhc.lambda-url.us-east-2.on.aws/';
-const DELETE_LAMBDA_URL = 'https://YOUR_DELETE_LAMBDA.lambda-url.us-east-2.on.aws/'; // UPDATE THIS
+const DELETE_LAMBDA_URL = 'https://d3fcunfwhpv4dhopus6lylkiam0dyabo.lambda-url.us-east-2.on.aws/'; // UPDATE THIS
 
 // === STATE ===
 let photoOrder = []; // Array of S3 keys in current order
