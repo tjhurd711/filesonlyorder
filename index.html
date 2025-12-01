@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Sorted Photos | Memorial Video AI</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" 
+          href="https://www.dropbox.com/scl/fi/7tqrvmnchu17tkatqa9l5/MemorialVideoAI-Favicon.svg?rlkey=5cj4gwyhq3frrupo1g1d3y8so&st=znzwkpy9&raw=1">
+    
+    <!-- SortableJS for drag-and-drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo -->
+        <header>
+            <img src="https://dl.dropboxusercontent.com/scl/fi/i5ye9vg5wzfvxwyrwczq6/Untitled-940-x-600-px-1400-x-600-px.png?rlkey=rk5t9ot5gchvjcqx71lwiln1o&st=1kjskc34&dl=1" alt="Memorial Video AI" class="logo">
+        </header>
+
+        <main>
+            <h1>Your Photos Are Ready!</h1>
+            <p class="subtitle">Your photos have been sorted chronologically by age. Drag and drop to adjust the order, then download.</p>
+
+            <!-- Instructions -->
+            <div class="instructions">
+                <div class="instruction-item">
+                    <span class="instruction-number">1</span>
+                    <span>Review your photos sorted by age (youngest to oldest)</span>
+                </div>
+                <div class="instruction-item">
+                    <span class="instruction-number">2</span>
+                    <span>Drag and drop to adjust the order if needed</span>
+                </div>
+                <div class="instruction-item">
+                    <span class="instruction-number">3</span>
+                    <span>Click "Download All" to get your sorted photos as a zip file</span>
+                </div>
+            </div>
+
+            <!-- Photo Count -->
+            <div class="photo-count">
+                <span id="photoCount">0</span> photos sorted
+            </div>
+
+            <!-- Download Button - Top -->
+            <div class="download-section">
+                <button type="button" class="download-btn" id="downloadBtn" onclick="downloadAll()">
+                    <span class="btn-icon">📥</span>
+                    <span class="btn-text">Download All as Zip</span>
+                </button>
+                <p class="download-note">Files will be named 001.jpg, 003.jpg, 006.jpg... for easy insertion into your slideshow software</p>
+            </div>
+
+            <!-- Photo Gallery -->
+            <div class="gallery-container">
+                <div id="photoGallery" class="photo-gallery">
+                    <!-- Photos will be loaded here dynamically -->
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading your photos...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="error-state" style="display: none;">
+                <p>😕 Unable to load photos. Please check your link or contact support.</p>
+                <p class="error-detail" id="errorDetail"></p>
+            </div>
+
+            <!-- Download Button - Bottom -->
+            <div class="download-section bottom" id="bottomDownload" style="display: none;">
+                <button type="button" class="download-btn" onclick="downloadAll()">
+                    <span class="btn-icon">📥</span>
+                    <span class="btn-text">Download All as Zip</span>
+                </button>
+            </div>
+
+        </main>
+
+        <footer>
+            <p>Questions? Contact us at <a href="mailto:team@memorialvideo.ai">team@memorialvideo.ai</a></p>
+            <p>&copy; 2025 Celebrife LLC. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
