@@ -1,0 +1,76 @@
+/* Memorial Video AI - Analytics Display Styles */
+/* Add to existing styles.css */
+
+/* Analytics Box */
+.analytics-box {
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
+    border: 2px solid #d1dbe8;
+    border-radius: 12px;
+    padding: 20px 25px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+/* Headline: "82 years of memories" */
+.analytics-headline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 20px;
+    color: #2d3748;
+    margin-bottom: 6px;
+}
+
+.analytics-icon {
+    font-size: 22px;
+}
+
+.analytics-years {
+    font-weight: 700;
+    color: #1e3c72;
+    font-size: 24px;
+}
+
+/* Age range: "Early Childhood → Eighties" */
+.analytics-age-range {
+    font-size: 16px;
+    color: #4a5568;
+    font-weight: 500;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+}
+
+/* Technical summary */
+.analytics-technical {
+    font-size: 13px;
+    color: #718096;
+    line-height: 1.5;
+    max-width: 500px;
+    margin: 0 auto;
+    padding-top: 14px;
+    border-top: 1px solid #d1dbe8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .analytics-box {
+        padding: 16px 20px;
+    }
+    
+    .analytics-headline {
+        font-size: 18px;
+    }
+    
+    .analytics-years {
+        font-size: 22px;
+    }
+    
+    .analytics-age-range {
+        font-size: 15px;
+    }
+    
+    .analytics-technical {
+        font-size: 12px;
+    }
+}
