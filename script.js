@@ -10,15 +10,31 @@ const S3_BASE_URL = `https://${S3_BUCKET}.s3.amazonaws.com`;
 const ZIP_LAMBDA_URL = 'https://cstueckloguxc24v6kshrxfn3y0oifhc.lambda-url.us-east-2.on.aws/';
 const DELETE_LAMBDA_URL = 'https://d3fcunfwhpv4dhopus6lylkiam0dyabo.lambda-url.us-east-2.on.aws/';
 
-// === STATE ===
-let photoOrder = []; // Array of S3 keys in current order
-let uid = null;
+// === BRANDING (set after URL params loaded) ===
+let supportEmail = 'team@memorialvideo.ai';
+let brandName = 'Memorial Video AI';
+let isSortByAge = false;
 
 // === INITIALIZATION ===
 window.addEventListener('DOMContentLoaded', async () => {
     // Get UID from URL
     const urlParams = new URLSearchParams(window.location.search);
     uid = urlParams.get('uid');
+    const type = urlParams.get('type') || '';
+
+    // Determine branding based on type
+    isSortByAge = type && type.toLowerCase().includes('file');
+    supportEmail = isSortByAge ? 'team@sortbyage.com' : 'team@memorialvideo.ai';
+    brandName = isSortByAge ? 'SortByAge' : 'Memorial Video AI';
+    
+    if (isSortByAge) {
+        document.getElementById('siteLogo').src = 'https://www.dropbox.com/scl/fi/22w5xw6t5keu6pa1cn8c5/Screenshot-2025-12-02-at-11.49.41-AM.png?rlkey=ev1s30l8q7dole5rd37i6z5xe&st=reqrcaww&raw=1';
+        document.getElementById('siteLogo').alt = 'SortByAge';
+        document.title = 'Your Sorted Photos | SortByAge';
+        document.getElementById('supportEmail').href = 'mailto:team@sortbyage.com';
+        document.getElementById('supportEmail').textContent = 'team@sortbyage.com';
+        document.getElementById('footerCopyright').textContent = '© 2025 SortByAge. All rights reserved.';
+    }
 
     if (!uid) {
         showError('No order ID provided. Please check your link.');
@@ -327,7 +343,7 @@ function showDownloadSuccess(photoCount, emailSent) {
                 <button class="btn-redownload" onclick="downloadAll()">Download Again</button>
             </div>
             
-            <p class="thank-you-support">Questions? Contact us at <a href="mailto:team@memorialvideo.ai">team@memorialvideo.ai</a></p>
+            <p class="thank-you-support">Questions? Contact us at <a href="mailto:${supportEmail}">${supportEmail}</a></p>
         </div>
     `;
     
