@@ -103,12 +103,12 @@ const AnalyticsDisplay = {
 
     /**
      * Calculate estimated manual sorting time
-     * Assumes ~30 seconds per photo for a human to look at, compare, and place
+     * Assumes ~1 minute 15 seconds (75 sec) per photo for a human to look at, compare, and place
      */
     calculateManualTime(photoCount) {
         if (!photoCount) return null;
         
-        const secondsPerPhoto = 30;
+        const secondsPerPhoto = 75;
         const totalSeconds = photoCount * secondsPerPhoto;
         const totalMinutes = Math.round(totalSeconds / 60);
         const hours = Math.floor(totalMinutes / 60);
@@ -203,7 +203,6 @@ const AnalyticsDisplay = {
                         <span class="time-saved-label">Estimated manual sorting time:</span>
                         <span class="time-saved-value">${manualTime}</span>
                     </div>
-                    <div class="time-saved-subtext">We did it in seconds.</div>
                 </div>
             `;
         }
@@ -238,4 +237,3 @@ const AnalyticsDisplay = {
         console.log('[ANALYTICS] Rendered successfully');
     }
 };
-
