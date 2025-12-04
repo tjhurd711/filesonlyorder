@@ -103,12 +103,15 @@ const AnalyticsDisplay = {
 
     /**
      * Calculate estimated manual sorting time
-     * Assumes ~1 minute 15 seconds (75 sec) per photo for a human to look at, compare, and place
+     * Uses scaling formula: sorting gets exponentially harder as photos increase
+     * Each photo takes longer to place because you're comparing against more existing photos
      */
     calculateManualTime(photoCount) {
         if (!photoCount) return null;
         
-        const secondsPerPhoto = 75;
+        // Base 60 seconds + 0.5 seconds per photo in the set
+        // This reflects that sorting 100 photos is way harder per-photo than sorting 20
+        const secondsPerPhoto = 60 + (photoCount * 0.5);
         const totalSeconds = photoCount * secondsPerPhoto;
         const totalMinutes = Math.round(totalSeconds / 60);
         const hours = Math.floor(totalMinutes / 60);
