@@ -111,7 +111,7 @@ const AnalyticsDisplay = {
         
         // Base 60 seconds + 0.5 seconds per photo in the set
         // This reflects that sorting 100 photos is way harder per-photo than sorting 20
-        const secondsPerPhoto = 60 + (photoCount * 0.5);
+        const secondsPerPhoto = 60 + (photoCount * 0.25);
         const totalSeconds = photoCount * secondsPerPhoto;
         const totalMinutes = Math.round(totalSeconds / 60);
         const hours = Math.floor(totalMinutes / 60);
