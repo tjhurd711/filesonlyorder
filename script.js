@@ -15,6 +15,24 @@ let supportEmail = 'team@memorialvideo.ai';
 let brandName = 'Memorial Video AI';
 let isSortByAge = false;
 
+// === ADD THESE FUNCTIONS HERE ===
+let deleteConfirmResolve = null;
+
+function showDeleteConfirm() {
+    return new Promise((resolve) => {
+        deleteConfirmResolve = resolve;
+        document.getElementById('deleteConfirmModal').classList.add('active');
+    });
+}
+
+function closeDeleteConfirm(result) {
+    document.getElementById('deleteConfirmModal').classList.remove('active');
+    if (deleteConfirmResolve) {
+        deleteConfirmResolve(result);
+        deleteConfirmResolve = null;
+    }
+}
+
 // === INITIALIZATION ===
 window.addEventListener('DOMContentLoaded', async () => {
     // Get UID from URL
@@ -549,11 +567,11 @@ function showError(message, detail = '') {
 
 // === DELETE PHOTO ===
 async function deletePhoto(s3Key, buttonElement) {
-    // Confirm deletion
-    if (!confirm('Are you sure you want to delete this photo? This cannot be undone.')) {
+    // Confirm deletion with custom modal
+    const confirmed = await showDeleteConfirm();
+    if (!confirmed) {
         return;
     }
-
     const photoItem = buttonElement.closest('.photo-item');
     
     // Show deleting state
